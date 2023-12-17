@@ -100,3 +100,7 @@ app.post('/login', async (req,res) => {
     }
   }
 });
+
+app.get('/test', (req, res) => {
+  console.log("server is running")
+});
