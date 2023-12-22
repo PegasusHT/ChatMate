@@ -159,7 +159,7 @@ wss.on('connection', (connection, req) => {
     const {recipient, text, file} = messageData;
     let filename = null;
     if (file) {
-      console.log('size', file.data.length);
+      // console.log('size', file.data.length);
       const parts = file.name.split('.');
       const ext = parts[parts.length - 1];
       filename = Date.now() + '.'+ext;
@@ -176,7 +176,7 @@ wss.on('connection', (connection, req) => {
         text,
         file: file ? filename : null,
       });
-      console.log('created message');
+      // console.log('created message');
       [...wss.clients]
         .filter(c => c.userId === recipient)
         .forEach(c => c.send(JSON.stringify({

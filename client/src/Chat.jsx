@@ -20,15 +20,19 @@ export default function Chat() {
         connectToWs();
     }, [selectedUserId]);
     function connectToWs() {
-        const ws = new WebSocket('ws://localhost:4040');
-        setWs(ws);
-        ws.addEventListener('message', handleMessage);
-        ws.addEventListener('close', () => {
-        setTimeout(() => {
-            console.log('Disconnected. Trying to reconnect.');
-            connectToWs();
-        }, 1000);
-        });
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+      const WS_URL = import.meta.env.VITE_WS_URL;
+      let WS_LINK = '';
+      WS_LINK = BACKEND_URL.includes('https:') ? `wss://${WS_URL}` : `ws://${WS_URL}`;
+      const ws = new WebSocket(WS_LINK);
+      setWs(ws);
+      ws.addEventListener('message', handleMessage);
+      ws.addEventListener('close', () => {
+      setTimeout(() => {
+          console.log('Disconnected. Trying to reconnect.');
+          connectToWs();
+      }, 1000);
+      });
     }
 
     function showOnlinePeople(peopleArray) {
@@ -139,6 +143,7 @@ export default function Chat() {
                         onClick={() => {setSelectedUserId(userId)}}
                         selected={userId === selectedUserId} />
                     ))}
+                    <span> Offline people</span>
                     {Object.keys(offlinePeople).map(userId => (
                         <Contact
                         key={userId}
