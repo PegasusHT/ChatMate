@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('./models/User');
+const Bot = require('./models/Bot');
 const Message = require('./models/Message');
 const jwt = require('jsonwebtoken');
 const cors =require('cors');
