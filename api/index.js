@@ -12,7 +12,7 @@ const cookieParser = require('cookie-parser');
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL)
-    .catch((err) => console.log(err));
+  .catch((err) => console.log(err));
 const jwtSecret = process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
 
@@ -21,8 +21,8 @@ app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    credentials: true,
-    origin: process.env.CLIENT_URL,
+  credentials: true,
+  origin: process.env.CLIENT_URL,
 }));
 
 async function getUserDataFromRequest(req) {
