@@ -56,6 +56,11 @@ app.get('/people', async (req,res) => {
   res.json(users);
 });
 
+app.get('/bot', async (req,res) => {
+  const bots = await Bot.find({}, {'_id':1,botname:1});
+  res.json(bots);
+});
+
 app.get('/profile', (req,res) => {
     const token = req.cookies?.token;
     if (token) {
