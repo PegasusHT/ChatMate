@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const User = require('./models/User');
 const Bot = require('./models/Bot');
 const Message = require('./models/Message');
+const MessageBot = require('./models/MessageBot');
 const jwt = require('jsonwebtoken');
 const cors =require('cors');
 const ws = require('ws');
@@ -48,6 +49,17 @@ app.get('/messages/:userId', async (req,res) => {
     sender:{$in:[userId,ourUserId]},
     recipient:{$in:[userId,ourUserId]},
   }).sort({createdAt: 1});
+  res.json(messages);
+}); 
+
+app.get('/messages/bot/:botId', async (req, res) => {
+  const { botId } = req.params;
+  const userData = await getUserDataFromRequest(req);
+  const ourUserId = userData.userId;
+  const messages = await MessageBot.find({
+    sender: { $in: [ourUserId, botId] },
+    recipient: { $in: [ourUserId, botId] },
+  }).sort({ createdAt: 1 });
   res.json(messages);
 });
 
@@ -135,7 +147,7 @@ wss.on('connection', (connection, req) => {
       clearInterval(connection.timer);
       connection.terminate();
       notifyAboutOnlinePeople();
-      console.log('dead');
+      // console.log('dead');
     }, 1000);
   }, 5000);
 
@@ -162,7 +174,7 @@ wss.on('connection', (connection, req) => {
 
   connection.on('message', async (message) => {
     const messageData = JSON.parse(message.toString());
-    const {recipient, text, file} = messageData;
+    const {recipient, text, file, userToUser,sendToBot,sendFromBot, botSender} = messageData;
     let filename = null;
     if (file) {
       // console.log('size', file.data.length);
@@ -175,24 +187,67 @@ wss.on('connection', (connection, req) => {
         console.log('file saved:'+path);
       });
     }
-    if (recipient && (text || file)) {
-      const messageDoc = await Message.create({
-        sender:connection.userId,
-        recipient,
-        text,
-        file: file ? filename : null,
-      });
-      // console.log('created message');
-      [...wss.clients]
-        .filter(c => c.userId === recipient)
-        .forEach(c => c.send(JSON.stringify({
-          text,
+    
+    if(userToUser) {
+      if (recipient && (text || file)) {
+        const messageDoc = await Message.create({
           sender:connection.userId,
           recipient,
+          text,
           file: file ? filename : null,
-          _id:messageDoc._id,
-        })));
+        });
+        // console.log('created message');
+        [...wss.clients]
+          .filter(c => c.userId === recipient)
+          .forEach(c => c.send(JSON.stringify({
+            text,
+            sender:connection.userId,
+            recipient,
+            file: file ? filename : null,
+            _id:messageDoc._id,
+          })));
+      }
+    } 
+
+    if(sendToBot) {
+      if (recipient && text) {
+        const messageDoc = await MessageBot.create({
+          sender: connection.userId,
+          recipient,
+          text,
+        });
+        // console.log('created message');
+        [...wss.clients]
+          .filter(c => c.userId === recipient)
+          .forEach(c => c.send(JSON.stringify({
+            text,
+            sender:connection.userId,
+            recipient,
+            _id:messageDoc._id,
+          })));
+      }
     }
+
+    if(sendFromBot) {
+      if (recipient && text) {
+        const messageDoc = await MessageBot.create({
+          sender: botSender,
+          recipient: connection.userId,
+          text,
+        });
+        // console.log('created message');
+        [...wss.clients]
+          .filter(c => c.userId === recipient)
+          .forEach(c => c.send(JSON.stringify({
+            text,
+            sender:botSender,
+            recipient: connection.userId,
+            _id:messageDoc._id,
+          })));
+      }
+    
+    }
+    
   });
 
   // notify everyone about online people (when someone connects)
