@@ -64,6 +64,7 @@ app.get('/profile', (req, res) => {
       res.json(userData);
     });
   } else {
+    res.cookie('userData', JSON.stringify({}), { sameSite: 'none', secure: true });
     res.status(401).json('no token');
   }
 });
