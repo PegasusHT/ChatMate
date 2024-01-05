@@ -55,17 +55,17 @@ app.get('/people', async (req,res) => {
   res.json(users);
 });
 
-app.get('/profile', (req,res) => {
-    const token = req.cookies?.token;
-    if (token) {
-      jwt.verify(token, jwtSecret, {}, (err, userData) => {
-        if (err) throw err;
-        res.json(userData);
-      });
-    } else {
-      console.log(req.cookies)
-      res.status(401).json('no token');
-    }
+app.get('/profile', (req, res) => {
+  const token = req.cookies?.token;
+  if (token) {
+    jwt.verify(token, jwtSecret, {}, (err, userData) => {
+      if (err) throw err;
+      res.cookie('userData', JSON.stringify(userData), { sameSite: 'none', secure: true });
+      res.json(userData);
+    });
+  } else {
+    res.status(401).json('no token');
+  }
 });
 
 app.post('/login', async (req,res) => {
