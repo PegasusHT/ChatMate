@@ -2,7 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('./models/User');
+const Bot = require('./models/Bot');
 const Message = require('./models/Message');
+const MessageBot = require('./models/MessageBot');
 const jwt = require('jsonwebtoken');
 const cors =require('cors');
 const ws = require('ws');
@@ -12,7 +14,7 @@ const cookieParser = require('cookie-parser');
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL)
-    .catch((err) => console.log(err));
+  .catch((err) => console.log(err));
 const jwtSecret = process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
 
@@ -21,8 +23,8 @@ app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    credentials: true,
-    origin: process.env.CLIENT_URL,
+  credentials: true,
+  origin: process.env.CLIENT_URL,
 }));
 
 async function getUserDataFromRequest(req) {
@@ -48,6 +50,17 @@ app.get('/messages/:userId', async (req,res) => {
     recipient:{$in:[userId,ourUserId]},
   }).sort({createdAt: 1});
   res.json(messages);
+}); 
+
+app.get('/messages/bot/:botId', async (req, res) => {
+  const { botId } = req.params;
+  const userData = await getUserDataFromRequest(req);
+  const ourUserId = userData.userId;
+  const messages = await MessageBot.find({
+    sender: { $in: [ourUserId, botId] },
+    recipient: { $in: [ourUserId, botId] },
+  }).sort({ createdAt: 1 });
+  res.json(messages);
 });
 
 app.get('/people', async (req,res) => {
@@ -55,18 +68,21 @@ app.get('/people', async (req,res) => {
   res.json(users);
 });
 
-app.get('/profile', (req, res) => {
-  const token = req.cookies?.token;
-  if (token) {
-    jwt.verify(token, jwtSecret, {}, (err, userData) => {
-      if (err) throw err;
-      res.cookie('userData', JSON.stringify(userData), { sameSite: 'none', secure: true });
-      res.json(userData);
-    });
-  } else {
-    
-    res.status(401).json(req.cookies);
-  }
+app.get('/bot', async (req,res) => {
+  const bots = await Bot.find({}, {'_id':1,botname:1});
+  res.json(bots);
+});
+
+app.get('/profile', (req,res) => {
+    const token = req.cookies?.token;
+    if (token) {
+      jwt.verify(token, jwtSecret, {}, (err, userData) => {
+        if (err) throw err;
+        res.json(userData);
+      });
+    } else {
+      res.status(401).json('no token');
+    }
 });
 
 app.post('/login', async (req,res) => {
@@ -131,7 +147,7 @@ wss.on('connection', (connection, req) => {
       clearInterval(connection.timer);
       connection.terminate();
       notifyAboutOnlinePeople();
-      console.log('dead');
+      // console.log('dead');
     }, 1000);
   }, 5000);
 
@@ -158,7 +174,7 @@ wss.on('connection', (connection, req) => {
 
   connection.on('message', async (message) => {
     const messageData = JSON.parse(message.toString());
-    const {recipient, text, file} = messageData;
+    const {recipient, text, file, userToUser,sendToBot,sendFromBot, botSender} = messageData;
     let filename = null;
     if (file) {
       // console.log('size', file.data.length);
@@ -171,24 +187,67 @@ wss.on('connection', (connection, req) => {
         console.log('file saved:'+path);
       });
     }
-    if (recipient && (text || file)) {
-      const messageDoc = await Message.create({
-        sender:connection.userId,
-        recipient,
-        text,
-        file: file ? filename : null,
-      });
-      // console.log('created message');
-      [...wss.clients]
-        .filter(c => c.userId === recipient)
-        .forEach(c => c.send(JSON.stringify({
-          text,
+    
+    if(userToUser) {
+      if (recipient && (text || file)) {
+        const messageDoc = await Message.create({
           sender:connection.userId,
           recipient,
+          text,
           file: file ? filename : null,
-          _id:messageDoc._id,
-        })));
+        });
+        // console.log('created message');
+        [...wss.clients]
+          .filter(c => c.userId === recipient)
+          .forEach(c => c.send(JSON.stringify({
+            text,
+            sender:connection.userId,
+            recipient,
+            file: file ? filename : null,
+            _id:messageDoc._id,
+          })));
+      }
+    } 
+
+    if(sendToBot) {
+      if (recipient && text) {
+        const messageDoc = await MessageBot.create({
+          sender: connection.userId,
+          recipient,
+          text,
+        });
+        // console.log('created message');
+        [...wss.clients]
+          .filter(c => c.userId === recipient)
+          .forEach(c => c.send(JSON.stringify({
+            text,
+            sender:connection.userId,
+            recipient,
+            _id:messageDoc._id,
+          })));
+      }
     }
+
+    if(sendFromBot) {
+      if (recipient && text) {
+        const messageDoc = await MessageBot.create({
+          sender: botSender,
+          recipient: connection.userId,
+          text,
+        });
+        // console.log('created message');
+        [...wss.clients]
+          .filter(c => c.userId === recipient)
+          .forEach(c => c.send(JSON.stringify({
+            text,
+            sender:botSender,
+            recipient: connection.userId,
+            _id:messageDoc._id,
+          })));
+      }
+    
+    }
+    
   });
 
   // notify everyone about online people (when someone connects)
