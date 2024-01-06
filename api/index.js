@@ -2,9 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('./models/User');
-const Bot = require('./models/Bot');
 const Message = require('./models/Message');
-const MessageBot = require('./models/MessageBot');
 const jwt = require('jsonwebtoken');
 const cors =require('cors');
 const ws = require('ws');
@@ -52,25 +50,9 @@ app.get('/messages/:userId', async (req,res) => {
   res.json(messages);
 }); 
 
-app.get('/messages/bot/:botId', async (req, res) => {
-  const { botId } = req.params;
-  const userData = await getUserDataFromRequest(req);
-  const ourUserId = userData.userId;
-  const messages = await MessageBot.find({
-    sender: { $in: [ourUserId, botId] },
-    recipient: { $in: [ourUserId, botId] },
-  }).sort({ createdAt: 1 });
-  res.json(messages);
-});
-
 app.get('/people', async (req,res) => {
   const users = await User.find({}, {'_id':1,username:1});
   res.json(users);
-});
-
-app.get('/bot', async (req,res) => {
-  const bots = await Bot.find({}, {'_id':1,botname:1});
-  res.json(bots);
 });
 
 app.get('/profile', (req,res) => {
