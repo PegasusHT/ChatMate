@@ -36,31 +36,31 @@ export default function Chat() {
     }
 
     function showOnlinePeople(peopleArray) {
-        const people = {};
-        peopleArray.forEach(({userId,username}) => {
-            people[userId] = username;
-        })
-        setOnlinePeople(people);
+      const people = {};
+      peopleArray.forEach(({userId,username}) => {
+          people[userId] = username;
+      })
+      setOnlinePeople(people);
     }
 
     function handleMessage(ev) {
-        const messageData = JSON.parse(ev.data);
-        // console.log({ev,messageData});
-        if ('online' in messageData) {
-          showOnlinePeople(messageData.online);
-        } else if ('text' in messageData) {
-          if (messageData.sender === selectedUserId) {
-            setMessages(prev => ([...prev, {...messageData}]));
-          }
+      const messageData = JSON.parse(ev.data);
+      // console.log({ev,messageData});
+      if ('online' in messageData) {
+        showOnlinePeople(messageData.online);
+      } else if ('text' in messageData) {
+        if (messageData.sender === selectedUserId) {
+          setMessages(prev => ([...prev, {...messageData}]));
         }
+      }
     }
 
     function logout() {
-        axios.post('/logout').then(() => {
-            setWs(null);
-            setId(null);
-            setUsername(null);
-        });
+      axios.post('/logout').then(() => {
+          setWs(null);
+          setId(null);
+          setUsername(null);
+      });
     }
 
     function sendMessage(ev, file = null) {
