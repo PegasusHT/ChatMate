@@ -12,7 +12,7 @@ const cookieParser = require('cookie-parser');
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL)
-  .catch((err) => console.log(err));
+    .catch((err) => console.log(err));
 const jwtSecret = process.env.JWT_SECRET;
 const bcryptSalt = bcrypt.genSaltSync(10);
 
@@ -21,8 +21,8 @@ app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  credentials: true,
-  origin: [process.env.CLIENT_URL, 'http://localhost:3000'],
+    credentials: true,
+    origin: process.env.CLIENT_URL,
 }));
 
 async function getUserDataFromRequest(req) {
@@ -48,7 +48,7 @@ app.get('/messages/:userId', async (req,res) => {
     recipient:{$in:[userId,ourUserId]},
   }).sort({createdAt: 1});
   res.json(messages);
-}); 
+});
 
 app.get('/people', async (req,res) => {
   const userData = await getUserDataFromRequest(req);
@@ -56,6 +56,7 @@ app.get('/people', async (req,res) => {
   const users = await User.find({_id: {$ne: ourUserId}}, {'_id':1,username:1});
   res.json(users);
 });
+
 
 app.get('/profile', (req,res) => {
     const token = req.cookies?.token;
@@ -65,6 +66,7 @@ app.get('/profile', (req,res) => {
         res.json(userData);
       });
     } else {
+      console.log(req.cookies)
       res.status(401).json('no token');
     }
 });
@@ -109,7 +111,10 @@ app.post('/register', async (req,res) => {
 });
 
 const port = process.env.PORT || 4040;
-const wss = new ws.Server({ port });
+const server = app.listen(port);
+// ws 
+const wss = new ws.WebSocketServer({server});
+// const wss = new ws.Server({ port });
 wss.on('connection', (connection, req) => {
 
   function notifyAboutOnlinePeople() {
@@ -129,7 +134,7 @@ wss.on('connection', (connection, req) => {
       clearInterval(connection.timer);
       connection.terminate();
       notifyAboutOnlinePeople();
-      // console.log('dead');
+      console.log('dead');
     }, 1000);
   }, 5000);
 
@@ -156,7 +161,7 @@ wss.on('connection', (connection, req) => {
 
   connection.on('message', async (message) => {
     const messageData = JSON.parse(message.toString());
-    const {recipient, text, file, userToUser,sendToBot,sendFromBot, botSender} = messageData;
+    const {recipient, text, file} = messageData;
     let filename = null;
     if (file) {
       // console.log('size', file.data.length);
@@ -169,67 +174,24 @@ wss.on('connection', (connection, req) => {
         console.log('file saved:'+path);
       });
     }
-    
-    if(userToUser) {
-      if (recipient && (text || file)) {
-        const messageDoc = await Message.create({
+    if (recipient && (text || file)) {
+      const messageDoc = await Message.create({
+        sender:connection.userId,
+        recipient,
+        text,
+        file: file ? filename : null,
+      });
+      // console.log('created message');
+      [...wss.clients]
+        .filter(c => c.userId === recipient)
+        .forEach(c => c.send(JSON.stringify({
+          text,
           sender:connection.userId,
           recipient,
-          text,
           file: file ? filename : null,
-        });
-        // console.log('created message');
-        [...wss.clients]
-          .filter(c => c.userId === recipient)
-          .forEach(c => c.send(JSON.stringify({
-            text,
-            sender:connection.userId,
-            recipient,
-            file: file ? filename : null,
-            _id:messageDoc._id,
-          })));
-      }
-    } 
-
-    if(sendToBot) {
-      if (recipient && text) {
-        const messageDoc = await MessageBot.create({
-          sender: connection.userId,
-          recipient,
-          text,
-        });
-        // console.log('created message');
-        [...wss.clients]
-          .filter(c => c.userId === recipient)
-          .forEach(c => c.send(JSON.stringify({
-            text,
-            sender:connection.userId,
-            recipient,
-            _id:messageDoc._id,
-          })));
-      }
+          _id:messageDoc._id,
+        })));
     }
-
-    if(sendFromBot) {
-      if (recipient && text) {
-        const messageDoc = await MessageBot.create({
-          sender: botSender,
-          recipient: connection.userId,
-          text,
-        });
-        // console.log('created message');
-        [...wss.clients]
-          .filter(c => c.userId === recipient)
-          .forEach(c => c.send(JSON.stringify({
-            text,
-            sender:botSender,
-            recipient: connection.userId,
-            _id:messageDoc._id,
-          })));
-      }
-    
-    }
-    
   });
 
   // notify everyone about online people (when someone connects)
