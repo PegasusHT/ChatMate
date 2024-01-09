@@ -66,7 +66,7 @@ app.get('/profile', (req,res) => {
         res.json(userData);
       });
     } else {
-      console.log(req.cookies)
+      // console.log(req.cookies)
       res.status(401).json('no token');
     }
 });
@@ -111,10 +111,9 @@ app.post('/register', async (req,res) => {
 });
 
 const port = process.env.PORT || 4040;
-const server = app.listen(port);
-// ws 
-const wss = new ws.WebSocketServer({server});
-// const wss = new ws.Server({ port });
+// const server = app.listen(port);
+// const wss = new ws.WebSocketServer({server});
+const wss = new ws.Server({ port: port });
 wss.on('connection', (connection, req) => {
 
   function notifyAboutOnlinePeople() {

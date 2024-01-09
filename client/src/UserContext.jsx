@@ -8,10 +8,18 @@ export function UserContextProvider({children}) {
     const [id, setId] = useState(null);
 
     useEffect(() => {
-        axios.get('/profile').then(response => {
-          setId(response.data.userId);
-          setUsername(response.data.username);
-        });
+        const checkUserSignIn = async () => {
+            try {
+                const response = await axios.get('/profile');
+                setId(response.data.userId);
+                setUsername(response.data.username);
+            } catch (error) {
+                // Handle error when user is not signed in
+                console.log("User is not signed in");
+            }
+        };
+
+        checkUserSignIn();
     }, []);
 
     return (
