@@ -111,9 +111,9 @@ app.post('/register', async (req,res) => {
 });
 
 const port = process.env.PORT || 4040;
-// const server = app.listen(port);
-// const wss = new ws.WebSocketServer({server});
-const wss = new ws.Server({ port: port });
+const server = app.listen(port);
+const wss = new ws.WebSocketServer({server});
+// const wss = new ws.Server({ port: port });
 wss.on('connection', (connection, req) => {
 
   function notifyAboutOnlinePeople() {
