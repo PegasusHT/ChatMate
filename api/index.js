@@ -11,6 +11,7 @@ const ws = require('ws');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
+const axios = require('axios');
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL)
@@ -124,6 +125,15 @@ app.post('/register', async (req,res) => {
   }
 });
 
+app.get('/proxy/:message', async (req, res) => {
+  try {
+    const response = await axios.get(`https://simsimi.fun/api/v2/?mode=talk&lang=en&message=${req.params.message}&filter=True`);
+    res.send(response.data);
+  } catch (error) {
+    res.status(500).send({ error: error.toString() });
+  }
+});
+
 const server = app.listen(4040, '0.0.0.0');
 
 // ws 
@@ -229,13 +239,12 @@ wss.on('connection', (connection, req) => {
     }
 
     if(sendFromBot) {
-      if (recipient && text) {
+      if (text) {
         const messageDoc = await MessageBot.create({
           sender: botSender,
           recipient: connection.userId,
           text,
         });
-        // console.log('created message');
         [...wss.clients]
           .filter(c => c.userId === recipient)
           .forEach(c => c.send(JSON.stringify({

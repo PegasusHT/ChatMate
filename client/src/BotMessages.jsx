@@ -55,41 +55,47 @@ export const BotMessageList = ({ selectedBotId, id }) => {
     _id: Date.now(),
     }]));
 
-    botReply(newMessageText);
+    await botReply(newMessageText);
   }
 
-  async function botReply(message){
-    await fetchSimiResponse(message).then((res) => {
-        ws.send(JSON.stringify({
-            recipient: selectedBotId,
-            sendFromBot: true,
-            sendToBot: false,
-            text: res.success,
-        }));
-        console.log(res.success)
-        setMessages(prev => ([...prev,{
-        text: res.success,
+  async function botReply(message) {
+    const response = await fetchSimiResponse(message);
+    const replyText = await response.success;
+    
+    await ws.send(
+      JSON.stringify({
+        botSender: selectedBotId,
+        sendFromBot: true,
+        sendToBot: false,
+        text: replyText,
+      })
+    );
+
+    await setMessages((prev) => [
+      ...prev,
+      {
+        text: response.success,
         sender: selectedBotId,
         recipient: id,
         _id: Date.now(),
-        }]));
-    })}
+      },
+    ]);
+  }
 
-    async function fetchSimiResponse(message) {
-        const apiUrl = `https://simsimi.fun/api/v2/?mode=talk&lang=en&message=${encodeURIComponent(message)}&filter=True`;
-
-        try {
-            const response = await axios.get(apiUrl);
-            const simiResponse = await response.data;
-            // Do something with the simiResponse
-            return simiResponse;
-        } catch (error) {
-            // Handle the error here
-            console.error('Error fetching SimSimi response:', error);
-            throw error;
-        }
-    }
-  
+  function fetchSimiResponse(message) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`proxy/${encodeURIComponent(message)}`)
+        .then((res) => {
+          const simiResponse = res.data;
+          resolve(simiResponse);
+        })
+        .catch((err) => {
+          console.log(err);
+          reject(err);
+        });
+    });
+  }
   useEffect(() => {
     if (selectedBotId) {
       axios.get('/messages/bot/'+selectedBotId).then(res => {
