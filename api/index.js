@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
   credentials: true,
-  origin: process.env.CLIENT_URL,
+  origin: [process.env.CLIENT_URL, 'http://localhost:3000'],
 }));
 
 async function getUserDataFromRequest(req) {
@@ -65,7 +65,9 @@ app.get('/messages/bot/:botId', async (req, res) => {
 });
 
 app.get('/people', async (req,res) => {
-  const users = await User.find({}, {'_id':1,username:1});
+  const userData = await getUserDataFromRequest(req);
+  const ourUserId = userData.userId;
+  const users = await User.find({_id: {$ne: ourUserId}}, {'_id':1,username:1});
   res.json(users);
 });
 
@@ -82,6 +84,7 @@ app.get('/profile', (req,res) => {
         res.json(userData);
       });
     } else {
+      // console.log(req.cookies)
       res.status(401).json('no token');
     }
 });
@@ -134,10 +137,10 @@ app.get('/proxy/:message', async (req, res) => {
   }
 });
 
-const server = app.listen(4040, '0.0.0.0');
-
-// ws 
+const port = process.env.PORT || 4040;
+const server = app.listen(port);
 const wss = new ws.WebSocketServer({server});
+// const wss = new ws.Server({ port: port });
 wss.on('connection', (connection, req) => {
 
   function notifyAboutOnlinePeople() {
