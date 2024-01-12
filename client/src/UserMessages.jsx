@@ -18,7 +18,7 @@ export const UserMessageList = ({ selectedUserId, id, showOnlinePeople }) => {
     const WS_URL = import.meta.env.VITE_WS_URL;
     let WS_LINK = '';
     WS_LINK = BACKEND_URL.includes('https:') ? `wss://${WS_URL}` : `ws://${WS_URL}`;
-    const ws = new WebSocket('wss://chatmate-api.onrender.com');
+    const ws = new WebSocket(WS_LINK);
     setWs(ws);
     ws.addEventListener('message', handleMessage);
     ws.addEventListener('close', () => {
