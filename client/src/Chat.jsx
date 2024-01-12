@@ -14,7 +14,8 @@ export default function Chat() {
   const [selectedUserId,setSelectedUserId] = useState(null);
   const [selectedBotId,setSelectedBotId] = useState(null);
   const {username,id,setId,setUsername} = useContext(UserContext);
-  
+  const [ws,setWs] = useState(null);
+
   function showOnlinePeople(peopleArray) {
     const people = {};
     peopleArray.forEach(({userId,username}) => {
@@ -95,17 +96,18 @@ export default function Chat() {
               selected={botId === selectedBotId} />
           ))}
         </div>
-        <Profile username={username}/>
+        <Profile username={username} setId={setId} setWs={setWs} setUsername={setUsername} />
       </div>
 
       {!selectedBotId && (
       <UserMessageList selectedUserId={selectedUserId} 
-        id={id}
+        id={id} ws={ws} setWs={setWs}
         showOnlinePeople={showOnlinePeople}/>)}
 
       {!selectedUserId && !!selectedBotId && (
         <BotMessageList selectedBotId={selectedBotId}
-        id={id}/>)}
+          id={id} ws={ws} setWs={setWs}/>
+      )}
     </div>
   );
 }

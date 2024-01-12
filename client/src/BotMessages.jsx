@@ -3,12 +3,11 @@ import axios from 'axios';
 import {useContext, useEffect, useRef, useState} from "react";
 import {uniqBy} from "lodash";
 
-export const BotMessageList = ({ selectedBotId, id }) => {
+export const BotMessageList = ({ selectedBotId, id, ws, setWs }) => {
   const [newMessageText,setNewMessageText] = useState('');
   const [messages,setMessages] = useState([]);
   const divUnderMessages = useRef();
   const messagesWithoutDupes = uniqBy(messages, '_id');
-  const [ws,setWs] = useState(null);
 
   useEffect(() => {
     connectToWs();

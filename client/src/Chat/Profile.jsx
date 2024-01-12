@@ -1,6 +1,7 @@
 import React from 'react';
+import axios from "axios";
 
-const Profile = ({ username }) => {
+const Profile = ({ username, setWs, setId, setUsername }) => {
 
   function logout() {
     axios.post('/logout').then(() => {
