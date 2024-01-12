@@ -22,9 +22,9 @@ export const BotMessageList = ({ selectedBotId, id, ws, setWs }) => {
     ws.addEventListener('message', handleMessage);
     ws.addEventListener('close', () => {
       setTimeout(() => {
-        console.log('Disconnected. Trying to reconnect.');
+        // console.log('Disconnected. Trying to reconnect.');
         connectToWs();
-      }, 1000);
+      }, 10000);
     });
   }
 
