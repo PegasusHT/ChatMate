@@ -12,9 +12,6 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const cookieParser = require('cookie-parser');
 const axios = require('axios');
-import { createServer } from 'https';
-import { readFileSync } from 'fs';
-import { WebSocketServer } from 'ws';
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL)
@@ -143,14 +140,9 @@ app.get('/proxy/:message', async (req, res) => {
   }
 });
 
-const server = createServer({
-  cert: readFileSync('/path/to/cert.pem'),
-  key: readFileSync('/path/to/key.pem')
-}, app);
 const port = process.env.PORT || 4040;
-server.listen(port);
-// const appServer = app.listen(port);
-const wss = new ws.WebSocketServer({ server });
+const server = app.listen(port);
+const wss = new ws.WebSocketServer({server});
 // const wss = new ws.Server({ port: port });
 wss.on('connection', (connection, req) => {
 
