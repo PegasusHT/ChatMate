@@ -32,17 +32,23 @@ app.use(cors({
 // console.log('cors', process.env.CLIENT_URL);
 
 async function getUserDataFromRequest(req) {
-  return new Promise((resolve, reject) => {
-    const token = req.cookies?.token;
-    if (token) {
-      jwt.verify(token, jwtSecret, {}, (err, userData) => {
-        if (err) throw err;
-        resolve(userData);
-      });
-    } else {
-      reject('no token');
-    }
-  });
+  try {
+    return new Promise((resolve, reject) => {
+      const token = req.cookies?.token;
+      if (token) {
+        jwt.verify(token, jwtSecret, {}, (err, userData) => {
+          if (err) throw err;
+          resolve(userData);
+        });
+      } else {
+        reject('no token');
+      }
+    });
+  } catch (error) {
+    // Handle the error here
+    console.error(error);
+    throw error;
+  }
 }
 
 app.get('/messages/:userId', async (req,res) => {
