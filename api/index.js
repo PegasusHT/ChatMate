@@ -25,9 +25,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
   credentials: true,
-  // origin: true,
+  origin: '*',
   // origin: ['https://chatmate-client.onrender.com', 'http://localhost:3000'],
-  origin: [process.env.CLIENT_URL, process.env.LOCAL_CLIENT_URL],
+  // origin: [process.env.CLIENT_URL, process.env.LOCAL_CLIENT_URL],
 }));
 // console.log('cors', process.env.CLIENT_URL);
 
