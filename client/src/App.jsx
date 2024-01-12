@@ -3,7 +3,8 @@ import { UserContextProvider } from './UserContext';
 import Routes from './Routes';
 
 function App() {
-  axios.defaults.baseURL= 'https://cors-anywhere.herokuapp.com/'+import.meta.env.VITE_BACKEND_URL;
+  // axios.defaults.baseURL= 'https://cors-anywhere.herokuapp.com/'+import.meta.env.VITE_BACKEND_URL;
+  axios.defaults.baseURL= import.meta.env.VITE_BACKEND_URL;
   axios.defaults.withCredentials= true;
 
   return(
