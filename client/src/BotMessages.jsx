@@ -24,7 +24,7 @@ export const BotMessageList = ({ selectedBotId, id, ws, setWs }) => {
       setTimeout(() => {
         // console.log('Disconnected. Trying to reconnect.');
         connectToWs();
-      }, 10000);
+      }, 1000);
     });
   }
 

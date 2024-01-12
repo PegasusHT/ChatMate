@@ -24,7 +24,7 @@ export const UserMessageList = ({ selectedUserId, id, showOnlinePeople, ws, setW
       setTimeout(() => {
         // console.log('Disconnected. Trying to reconnect.');
         connectToWs();
-      }, 10000);
+      }, 1000);
     });
   }
 
