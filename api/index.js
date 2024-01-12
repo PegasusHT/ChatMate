@@ -29,7 +29,6 @@ app.use(cors({
   headers: ["Content-Type"],
 }));
 app.options('*', cors())
-// console.log('cors', process.env.CLIENT_URL);
 
 async function getUserDataFromRequest(req) {
   try {
