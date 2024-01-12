@@ -85,7 +85,8 @@ app.get('/bot', async (req,res) => {
   res.json(bots);
 });
 
-app.get('/profile', (req,res) => {
+app.get('/profile', (req, res) => {
+  try {
     const token = req.cookies?.token;
     if (token) {
       jwt.verify(token, jwtSecret, {}, (err, userData) => {
@@ -93,9 +94,11 @@ app.get('/profile', (req,res) => {
         res.json(userData);
       });
     } else {
-      // console.log(req.cookies)
       res.status(401).json('no token');
     }
+  } catch (error) {
+    res.status(500).json('server error');
+  }
 });
 
 app.post('/login', async (req,res) => {
