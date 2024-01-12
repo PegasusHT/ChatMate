@@ -6,7 +6,7 @@ const Bot = require('./models/Bot');
 const Message = require('./models/Message');
 const MessageBot = require('./models/MessageBot');
 const jwt = require('jsonwebtoken');
-const cors =require('cors');
+const cors = require('cors');
 const ws = require('ws');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
@@ -25,9 +25,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
   credentials: true,
-  // origin: '*',
-  origin: ['https://chatmate-client.onrender.com', 'http://localhost:3000','https://chatmate-client.onrender.com/'],
-  // origin: [process.env.CLIENT_URL, process.env.LOCAL_CLIENT_URL],
+  origin: [process.env.CLIENT_URL, process.env.LOCAL_CLIENT_URL], 
+  headers: ["Content-Type"],
 }));
 // console.log('cors', process.env.CLIENT_URL);
 
