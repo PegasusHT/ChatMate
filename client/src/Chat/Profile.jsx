@@ -9,6 +9,7 @@ const Profile = ({ username, setWs, setId, setUsername }) => {
       setId(null);
       setUsername(null);
     });
+    localStorage.removeItem('user');
   }
 
   return (

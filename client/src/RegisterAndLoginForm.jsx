@@ -11,16 +11,19 @@ export default function RegisterAndLoginForm() {
   const [isLoginOrRegister, setIsLoginOrRegister] = useState('login');
   const {setUsername:setLoggedInUsername, setId} = useContext(UserContext);
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+
   async function handleSubmit(ev) {
     ev.preventDefault();
     const url = isLoginOrRegister === 'register' ? 'register' : 'login';
     const {data} = await axios.post(url, {username,password});
     setLoggedInUsername(username);
     setId(data.id);
+    localStorage.setItem('user', JSON.stringify({ userId: data.id, username }));
   }
+  
   return (
     <div className={`bg-blue-50 h-screen flex items-center justify-center ${isMobile ? 'flex-col' : ''}`}>
-      <div classname='flex flex-col'>
+      <div className='flex flex-col'>
         <div className={` ${isMobile ? 'mt-36' : ''}`}>
           <Logo isFrontPage={true}/>
         </div>

@@ -9,14 +9,20 @@ export function UserContextProvider({children}) {
 
     useEffect(() => {
         const checkUserSignIn = async () => {
-            try {
-                const response = await axios.get('/profile');
-                setId(response.data.userId);
-                setUsername(response.data.username);
-            } catch (error) {
-                // Handle error when user is not signed in
-                console.log("User is not signed in");
-            }
+            const user = localStorage.getItem('user');
+            if (user) {
+                const { userId, username } = JSON.parse(user);
+                setId(userId);
+                setUsername(username);
+              } 
+            // try {
+            //     const response = await axios.get('/profile');
+            //     setId(response.data.userId);
+            //     setUsername(response.data.username);
+            // } catch (error) {
+            //     // Handle error when user is not signed in
+            //     console.log("User is not signed in");
+            // }
         };
 
         checkUserSignIn();
