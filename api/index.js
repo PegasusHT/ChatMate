@@ -107,7 +107,7 @@ app.post('/login', async (req,res) => {
     const passOk = bcrypt.compareSync(password, foundUser.password);
     if (passOk) {
       jwt.sign({userId:foundUser._id,username}, jwtSecret, {}, (err, token) => {
-        res.cookie('token', token, {sameSite:'none', secure:true}).json({
+        res.cookie('token', token, {sameSite:'None', secure:true}).json({
           id: foundUser._id,
         });
       });
@@ -116,7 +116,7 @@ app.post('/login', async (req,res) => {
 });
 
 app.post('/logout', (req,res) => {
-  res.cookie('token', '', {sameSite:'none', secure:true}).json('ok');
+  res.cookie('token', '', {sameSite:'None', secure:true}).json('ok');
 });
 
 app.post('/register', async (req,res) => {
@@ -129,7 +129,7 @@ app.post('/register', async (req,res) => {
     });
     jwt.sign({userId:createdUser._id,username}, jwtSecret, {}, (err, token) => {
       if (err) throw err;
-      res.cookie('token', token, {sameSite:'none', secure:true}).status(201).json({
+      res.cookie('token', token, {sameSite:'None', secure:true}).status(201).json({
         id: createdUser._id,
       });
     });
