@@ -24,7 +24,7 @@ export default function RegisterAndLoginForm() {
         <div className={` ${isMobile ? 'mt-36' : ''}`}>
           <Logo isFrontPage={true}/>
         </div>
-        <form className="w-64 mx-auto mb-12" onSubmit={handleSubmit}>
+        <form className="w-64 mx-auto" onSubmit={handleSubmit}>
           <input value={username}
                 onChange={ev => setUsername(ev.target.value)}
                 type="text" placeholder="username"
