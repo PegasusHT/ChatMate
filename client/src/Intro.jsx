@@ -19,7 +19,7 @@ const Intro = () => {
             <div className="max-w-md p-6 bg-white rounded-lg shadow-lg mt-16">
                 <h3 className={`font-bold ${isMobile ? 'text-lg' : 'text-xl'}`}>Notes:</h3>
                 <p className="text-gray-600">
-                    1. Free version of Render server will sleep after 30 minutes of inactivity. It will take a while to wake up. <br />
+                    1. Free version of Render server will sleep after 30 minutes of inactivity. It will take 1-2 minutes to wake up. <br />
                     2. To use ChatMate with Safari browser, you need to enable third-party cookies. Other browser like Chrome and Firefox are fine.
                     <br />
                     Follow these steps:
